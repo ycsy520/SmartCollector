@@ -1,0 +1,41 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Project (01 清单 §1)
+src-tauri/target
+*.db
+*.sqlite
+.scaffold/
+
+# 图标候选的一次性生成图（AI 草稿，母版已收敛到 src-tauri/app-icon.png），不入库
+vibe_images/
+
+# `npx tauri icon` 会连带生成移动端资源；本项目是桌面端，不入库
+src-tauri/icons/android/
+src-tauri/icons/ios/
+
+# 本地密钥：临时开发用 .env 承载 API Key，绝不入库、绝不提交（生产迁 keyring）
+.env
+.env.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

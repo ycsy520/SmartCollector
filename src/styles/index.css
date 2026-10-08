@@ -1,0 +1,508 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Material 3 Expressive — 令牌层
+   以朱砂 #B432E 为 seed 生成的角色化 tonal 调色板。
+   色值以「R G B」三元组存储，Tailwind 侧用 rgb(var / <alpha-value>)
+   暴露，从而兼容 bg-primary/10 之类透明度写法；
+   浅色在 :root，深色在 :root[data-theme="dark"] 覆写同名变量（值只存在一份）；
+   该属性由 src/lib/theme.ts 落地：偏好"随系统"时它读 matchMedia 并订阅系统翻转。
+   精确色值按 M3 tonal 手调并校 WCAG 对比，非官方取色器直出。
+   ============================================================ */
+@layer base {
+  :root {
+    /* 主色：朱砂 seed */
+    --md-primary: 144 74 58;
+    --md-on-primary: 255 255 255;
+    --md-primary-container: 255 219 210;
+    --md-on-primary-container: 58 11 4;
+    --md-primary-press: 122 58 44;
+
+    /* 次要 / 三级 */
+    --md-secondary: 119 87 80;
+    --md-on-secondary: 255 255 255;
+    --md-secondary-container: 255 219 211;
+    --md-on-secondary-container: 44 21 17;
+    /* tonal 按钮的悬停/压态：容器色的同色相加深档。
+       不用 bg-surface-high（灰向，悬停会把品牌暖色按钮洗成灰），也不用 opacity
+       （会把文字一起调透明）。对比 10.41:1（on-secondary-container）。 */
+    --md-secondary-press: 240 190 180;
+
+    /* 语义色 */
+    --md-error: 179 38 30;
+    --md-on-error: 255 255 255;
+    --md-error-container: 249 222 220;
+    --md-on-error-container: 65 14 11;
+    /* 破坏性按钮的悬停态（取代原先的 hover:opacity-90）：7.82:1。 */
+    --md-error-press: 158 33 26;
+    --md-success: 76 102 43;
+    --md-on-success: 255 255 255;
+    --md-success-container: 205 236 202;
+    --md-on-success-container: 10 32 0;
+    --md-warn: 122 90 0;
+    --md-warn-container: 255 223 158;
+    --md-on-warn-container: 38 24 0;
+    --md-info: 58 90 120;
+    --md-info-container: 207 229 245;
+    --md-on-info-container: 0 30 48;
+
+    /* 表面（暖中性，随朱砂微染） */
+    --md-surface: 255 248 246;
+    --md-surface-container-lowest: 255 255 255;
+    --md-surface-container-low: 251 245 243;
+    --md-surface-container: 245 239 237;
+    --md-surface-container-high: 239 233 231;
+    --md-surface-container-highest: 233 227 225;
+    /* 卡片/浮层专用：浅色比页面更浅（白），深色比页面更浅（抬升） */
+    --md-card: 255 255 255;
+    --md-card-2: 245 239 237;
+    --md-on-surface: 30 27 26;
+    --md-on-surface-variant: 82 67 63;
+    /* 辅助/hint 文字专用角色。原先全站 97 处写 text-stone-400，而 stone-400 映到
+       --md-outline——outline 在 M3 里只用于描边，拿它当正文色是语义错位（浅色下仅 4.5:1，
+       正是"糊成一片"的来源）。这里给一个真正的第三级文字色：浅 6.78:1 / 深 5.89:1 于卡片。 */
+    --md-text-hint: 103 88 83;
+    --md-outline: 122 105 100;
+    --md-outline-variant: 220 198 192;
+    --md-inverse-surface: 51 47 45;
+    --md-inverse-on-surface: 247 239 237;
+    --md-scrim: 26 15 12;
+
+    /* 分类 tonal 容器（8 类，去饱和、暖向统一） */
+    --cat-tech: 214 227 239;
+    --cat-tech-on: 11 29 42;
+    --cat-product: 230 220 240;
+    --cat-product-on: 29 20 48;
+    --cat-business: 236 223 198;
+    --cat-business-on: 36 26 0;
+    --cat-learning: 205 236 202;
+    --cat-learning-on: 10 32 0;
+    --cat-life: 242 217 223;
+    --cat-life-on: 46 18 24;
+    --cat-news: 241 221 206;
+    --cat-news-on: 35 20 7;
+    --cat-creative: 239 216 236;
+    --cat-creative-on: 44 18 41;
+    --cat-other: 233 227 225;
+    --cat-other-on: 82 67 63;
+
+    /* 弹性动效曲线（近弹簧，纯 CSS，无动画库） */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-emph: cubic-bezier(0.2, 0, 0, 1);
+    /* 进入/位移主曲线：内置 ease-out 太弱，这里用强 ease-out；侧栏/浮层滑入用 iOS 抽屉曲线（Ionic）。
+       全站唯一源，tailwind.config 只引用不复制。 */
+    --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+    /* 时长唯一源（UI 上限 300ms）：按压 100 / 悬停 180 / 进入 200 / 离开 160 / 强调 300。
+       必须在此定义——引用未定义的 --dur-* 会让 transition-duration 回落 0s，动效静默消失。 */
+    --dur-press: 100ms;
+    --dur-hover: 180ms;
+    --dur-instant: 150ms;
+    --dur-enter: 200ms;
+    --dur-exit: 160ms;
+    --dur-emph: 300ms;
+    --dur-flash: 550ms;
+    /* 顶部灵动岛：进/退比旧 toast 明显更缓——核心是"从容、不打扰"，宁慢勿急。 */
+    --dur-island-in: 420ms;
+    --dur-island-out: 260ms;
+
+    color-scheme: light;
+  }
+
+  /* 暗色由 html[data-theme="dark"] 驱动，不再直接写 @media (prefers-color-scheme: dark)：
+     "随系统"时也由 src/lib/theme.ts 把 matchMedia 解析成显式的 dark/light 落地。
+     真因——实测在 Chromium 里把 color-scheme 设成 `only light` 并不能让 prefers-color-scheme
+     反悔（matchMedia 仍为 true、令牌仍是暗值），所以做不到"零 JS 只靠 CSS 覆写"；
+     与其把 60 行令牌值镜像成两份（本仓已因"同一颜色写两处、其中一处忘翻"出过 bug），
+     不如让值只存在这一份，由 JS 决定挂不挂这个属性。 */
+  :root[data-theme="dark"] {
+    /* 柔化：primary 由霓虹三文鱼降饱和为陶土；文字降亮度去眩光；
+       elevation 方向纠正——页面 surface 最深，容器越抬升越浅（M3 深色惯例）。 */
+    --md-primary: 202 152 139;
+    --md-on-primary: 62 25 15;
+    --md-primary-container: 92 43 32;
+    --md-on-primary-container: 250 214 205;
+    /* M3 深色 state layer 惯例是把实心色往上提亮，但本应用暗色口径为"降眩光"
+       （用户 2026-09-26 二次报同一问题）：hover 改为比静止更沉，与浅色方向一致。
+       2026-09-28 降饱和批次：primary 231 167 150 → 202 152 139（S 0.351→0.312、明度 −21%），
+       press 同向下移到 184 136 122；on-primary 对比 6.20:1 / 5.06:1，仍过 WCAG AA 4.5:1。 */
+    --md-primary-press: 184 136 122;
+
+    --md-secondary: 214 178 170;
+    --md-on-secondary: 60 38 32;
+    --md-secondary-container: 82 58 52;
+    --md-on-secondary-container: 248 213 205;
+    --md-secondary-press: 66 45 40;
+
+    --md-error: 233 168 165;
+    --md-on-error: 74 18 15;
+    --md-error-container: 112 30 25;
+    --md-on-error-container: 245 210 207;
+    --md-error-press: 212 148 145;
+    --md-success: 165 199 155;
+    --md-on-success: 20 44 8;
+    --md-success-container: 48 74 40;
+    --md-on-success-container: 196 226 190;
+    --md-warn: 214 178 108;
+    --md-warn-container: 74 56 12;
+    --md-on-warn-container: 245 214 150;
+    --md-info: 160 192 216;
+    --md-info-container: 32 62 84;
+    --md-on-info-container: 200 224 240;
+
+    --md-surface: 18 16 15;
+    --md-surface-container-lowest: 13 11 10;
+    --md-surface-container-low: 26 24 22;
+    --md-surface-container: 31 28 26;
+    --md-surface-container-high: 40 36 34;
+    --md-surface-container-highest: 49 45 42;
+    --md-card: 26 24 22;
+    --md-card-2: 40 36 34;
+    --md-on-surface: 224 214 210;
+    --md-on-surface-variant: 196 186 182;
+    --md-text-hint: 160 146 141;
+    --md-outline: 148 134 129;
+    --md-outline-variant: 70 59 56;
+    --md-inverse-surface: 224 214 210;
+    --md-inverse-on-surface: 40 36 34;
+    --md-scrim: 0 0 0;
+
+    --cat-tech: 40 60 74;
+    --cat-tech-on: 190 218 236;
+    --cat-product: 62 54 78;
+    --cat-product-on: 216 205 232;
+    --cat-business: 66 56 36;
+    --cat-business-on: 224 206 172;
+    --cat-learning: 48 74 40;
+    --cat-learning-on: 196 226 190;
+    --cat-life: 74 52 56;
+    --cat-life-on: 232 200 208;
+    --cat-news: 74 56 44;
+    --cat-news-on: 232 206 186;
+    --cat-creative: 74 52 70;
+    --cat-creative-on: 232 200 228;
+    --cat-other: 49 45 42;
+    --cat-other-on: 196 186 182;
+
+    color-scheme: dark;
+  }
+
+  html {
+    @apply antialiased;
+    font-family: "Roboto Flex", system-ui, -apple-system, "Segoe UI",
+      "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+
+  body {
+    background-color: rgb(var(--md-surface));
+    color: rgb(var(--md-on-surface));
+    font-optical-sizing: auto;
+    letter-spacing: 0.01em;
+    transition: background-color var(--dur-emph) var(--ease-emph), color var(--dur-emph) var(--ease-emph);
+  }
+
+  ::selection {
+    background: rgb(var(--md-primary-container));
+    color: rgb(var(--md-on-primary-container));
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--md-outline-variant));
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--md-outline));
+    background-clip: padding-box;
+  }
+
+  mark {
+    background: rgb(var(--md-warn-container));
+    color: rgb(var(--md-on-warn-container));
+    border-radius: 4px;
+    padding: 0 2px;
+  }
+
+  /* 桌面精度交互：Tailwind v3 preflight 刻意不给 <button> 指针光标（v4 才改默认），
+     全站可点击元素因此都是默认箭头——违反"所有可点击元素有明确交互反馈"。统一在 base
+     层补齐，只作用于启用态；禁用态交给各组件既有的 pointer-events-none / cursor-not-allowed。
+     cursor 非颜色/边框属性，不与任何 variant 档短路冲突。 */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  /* M3  elevation（阴影随 scrim 变量翻转） */
+  .shadow-e1 {
+    box-shadow: 0 1px 2px rgb(var(--md-scrim) / 0.3), 0 1px 3px 1px rgb(var(--md-scrim) / 0.15);
+  }
+  .shadow-e2 {
+    box-shadow: 0 1px 2px rgb(var(--md-scrim) / 0.3), 0 2px 6px 2px rgb(var(--md-scrim) / 0.15);
+  }
+
+  /* 弹簧按压：M3 Expressive 的招牌交互反馈。
+     必须写全 transform/box-shadow，且组件侧不得再叠 transition-* utility——
+     @layer utilities 的同特异度规则会整条覆盖这里的 transition 简写（曾因此弹簧静默失效）。 */
+  .md-press {
+    transition: transform var(--dur-exit) var(--ease-spring),
+      background-color var(--dur-hover) var(--ease-emph),
+      box-shadow var(--dur-exit) var(--ease-spring), color var(--dur-hover) var(--ease-emph);
+  }
+  .md-press:active {
+    transform: scale(0.97);
+    transition-duration: var(--dur-press);
+  }
+
+  /* 抬升卡片：hover 只轻微提亮 + 1px 位移。位移从 -3px 收到 -1px、弹簧换成强 ease-out：
+     分拣列表一天扫几十次，果冻感来自高频重复的弹性位移，不是来自缺少反馈。 */
+  .md-elev {
+    box-shadow: 0 1px 2px rgb(var(--md-scrim) / 0.24), 0 1px 3px 1px rgb(var(--md-scrim) / 0.1);
+    transition: transform var(--dur-hover) var(--ease-out-strong),
+      box-shadow var(--dur-hover) var(--ease-out-strong),
+      border-color var(--dur-hover) var(--ease-emph), background-color var(--dur-hover) var(--ease-emph);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .md-elev-hover:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px 1px rgb(var(--md-scrim) / 0.18), 0 1px 2px rgb(var(--md-scrim) / 0.24);
+    }
+  }
+
+  /* 表达性字级：display / headline / title / label */
+  .type-display {
+    font-size: 2.25rem;
+    line-height: 1.12;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .type-headline {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    font-weight: 600;
+  }
+  .type-title {
+    font-size: 1.05rem;
+    line-height: 1.35;
+    font-weight: 600;
+  }
+  .type-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* ============================================================
+   反馈动效（如水流）：卡片入场/退场、新片段高亮环、行内回执淡入、理完庆祝。
+   统一 150–250ms、ease-emph 曲线；prefers-reduced-motion 下全部降级为无动画。
+   ============================================================ */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes card-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateX(14px) scale(0.98); }
+}
+@keyframes ring-flash {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.015); }
+}
+@keyframes caption-in {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes celebrate-pop {
+  0% { opacity: 0; transform: scale(0.92); }
+  45% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* 并置详情栏入场：从右滑入。位移方向与它出现的位置同向（spatial），
+   但用抽屉曲线且不带缩放——回弹（spring overshoot）会让刚点开的正文晃一下，遮挡阅读。 */
+@keyframes pane-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: none; }
+}
+/* 切页：列表列一次性轻推入场，让"换了页面"有物理感而非瞬间替换。 */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.card-enter { animation: card-in 0.22s var(--ease-emph) both; }
+.card-leaving { animation: card-out 0.2s var(--ease-emph) both; pointer-events: none; }
+.card-fresh::after {
+  /* 高亮环画在伪元素上：动画的只有 opacity/transform（GPU），
+     原来直接对 box-shadow 做 1.2s 关键帧，既非合成属性又拖沓。 */
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px rgb(var(--md-primary) / 0.5);
+  animation: ring-flash var(--dur-flash) var(--ease-out-strong) 1 forwards;
+}
+.caption-in { animation: caption-in 0.18s var(--ease-emph) both; }
+/* 纯淡入：给"换了内容但换了节点"的切换用。不带位移——位移会挪动 autoFocus 的目标。 */
+.fade-in { animation: fade-in var(--dur-instant) linear both; }
+.celebrate-in { animation: celebrate-pop 0.5s var(--ease-spring) both; }
+.pane-in { animation: pane-in var(--dur-enter) var(--ease-drawer) both; }
+.page-in { animation: page-in 0.2s var(--ease-emph) both; }
+
+/* 统计条从"零"长到目标值：条形读的是相对比例，从零长出来才看得出它是被算出来的，
+   而不是画面里本来就画满的格子。只动 transform（GPU），长度由内联 width/height 给定。 */
+@keyframes bar-grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes bar-grow-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+/* 条形：长度变化一律走补间（`.bar-*` 只负责补间与变换原点），从 0 生长的进入动画
+   由 `.bar-in` 单独承担，且只在统计面板首次出数时挂上。
+   挂在基类上会让每次切时间窗都重播一遍生长——几十根柱子同时从 0 窜起来，
+   用户看到的是"闪一下"，而不是"数据在变"。 */
+.bar-x {
+  transform-origin: left;
+  transition: width 0.24s var(--ease-out-strong);
+}
+.bar-y {
+  transform-origin: bottom;
+  transition: height 0.24s var(--ease-out-strong);
+}
+.bar-in.bar-x {
+  animation: bar-grow-x 0.32s var(--ease-out-strong) both;
+}
+.bar-in.bar-y {
+  animation: bar-grow-y 0.32s var(--ease-out-strong) both;
+}
+
+/* ============================================================
+   弹窗与 Toast：此前完全没有进入/退出，是全站最突兀的状态切换。
+   模态不锚定触发点，按规范保持 center origin；起始 scale 0.94 + opacity（绝不用 scale(0)）。
+   Toast 可连发，必须用 transition（keyframe 会从头重启，连发时跳动）。
+   ============================================================ */
+@keyframes scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scrim-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes modal-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: scale(0.96); }
+}
+.scrim-in { animation: scrim-in var(--dur-instant) var(--ease-emph) both; }
+.scrim-out { animation: scrim-out var(--dur-exit) var(--ease-emph) both; }
+.modal-in { animation: modal-in var(--dur-enter) var(--ease-out-strong) both; }
+.modal-out { animation: modal-out var(--dur-exit) var(--ease-emph) both; }
+
+/* 顶部灵动岛：从顶栏上方"伸出"（自上方落下 + 略放大）进入，退场缩回顶部。
+   进出都走 transform+opacity；进入 420ms ease-out-strong（缓出、落定温柔），离开 260ms ease-emph。 */
+.island {
+  transition: transform var(--dur-island-in) var(--ease-out-strong),
+    opacity var(--dur-island-in) var(--ease-out-strong);
+}
+.island[data-mounted="false"] {
+  opacity: 0;
+  transform: translateY(-140%) scale(0.9);
+}
+.island[data-leaving="true"] {
+  opacity: 0;
+  transform: translateY(-140%) scale(0.94);
+  transition-duration: var(--dur-island-out);
+  transition-timing-function: var(--ease-emph);
+}
+/* 文案在容器落定后稍迟淡入——贴合灵动岛"先形变、再揭示内容"，避免整块啪地出现。 */
+.island-body {
+  animation: island-body-in var(--dur-instant) var(--ease-emph) both;
+  animation-delay: 90ms;
+}
+@keyframes island-body-in {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 降级动效：prefers-reduced-motion 下只保留"状态在变"的可见性（opacity），去掉一切位移/缩放。
+   不是把动画清零——清零会让内容凭空出现与凭空消失，反而更刺眼。 */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-enter,
+  .caption-in,
+  .celebrate-in,
+  .pane-in,
+  .page-in,
+  .scrim-in,
+  .modal-in,
+  .bar-x,
+  .bar-y {
+    /* 条形切时间窗时的长度变化也不做补间——reduce 下让数值直接落定。 */
+    transition: none;
+  }
+  /* 首次揭示的生长也要停：选择器必须带上 .bar-in，否则压不住基类同权重的生长规则。 */
+  .bar-in.bar-x,
+  .bar-in.bar-y {
+    animation: fade-in var(--dur-instant) linear both;
+  }
+  .card-leaving,
+  .modal-out {
+    animation: fade-out var(--dur-instant) linear both;
+  }
+  /* 新片段高亮环：reduce 下不做扩散，只让它淡出——环本身是"这条是新的"的信息，不能留成常驻。 */
+  .card-fresh::after {
+    animation: fade-out var(--dur-flash) linear 1 forwards;
+  }
+  /* 无限脉冲只是"在忙"的装饰性表达，数字本身已说明状态；reduce 下停掉。 */
+  .animate-pulse {
+    animation: none;
+  }
+  /* 变换类反馈（按压缩放、悬停抬升、滑入位移）归零，颜色/阴影反馈保留。 */
+  .island {
+    transition-property: opacity;
+  }
+  .island[data-mounted="false"],
+  .island[data-leaving="true"] {
+    transform: none;
+  }
+  /* 岛内容延迟揭示与 pending 转圈都是装饰：reduce 下直接落定、停转（状态文案本身已说明在忙）。 */
+  .island-body {
+    animation: none;
+  }
+  .island .animate-spin {
+    animation: none;
+  }
+  /* 变换类反馈（按压缩放、悬停抬升）归零，颜色/阴影反馈保留。 */
+  .md-press,
+  .md-press:active,
+  .md-elev,
+  .md-elev-hover:hover {
+    transform: none;
+  }
+  /* :not(.island) 是必需的：岛行同时带 md-elev，若不排除，这条同权重但更靠后的
+     规则会把 .island 的 opacity 过渡整条覆盖掉（旧 toast LIVE 实测：淡入被吞）。 */
+  .md-press,
+  .md-elev:not(.island) {
+    transition-property: background-color, color, box-shadow;
+  }
+}

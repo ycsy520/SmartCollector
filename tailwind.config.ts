@@ -4,13 +4,22 @@ import colors from "tailwindcss/colors";
 // 色值以「R G B」三元组存于 CSS 变量；用 <alpha-value> 暴露以兼容 /10、/95 等透明度写法。
 const c = (name: string) => `rgb(var(${name}) / <alpha-value>)`;
 
+// tailwindcss/colors 至今仍导出 v2 时代的旧别名（lightBlue/warmGray/trueGray/coolGray/blueGray），
+// 整包展开会让每次构建刷 5 条 deprecation 警告。剔除后只保留现行色板，行为不变。
+const LEGACY_ALIASES = ["lightBlue", "warmGray", "trueGray", "coolGray", "blueGray"];
+const palette = Object.fromEntries(
+  Object.keys(colors)
+    .filter((name) => !LEGACY_ALIASES.includes(name))
+    .map((name) => [name, (colors as Record<string, unknown>)[name]]),
+);
+
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     // 颜色放在顶层 theme.colors（非 extend）：先展开默认色板，再覆写内置族到 M3 角色 var，
     // 保证 bg-stone-*/bg-white/text-stone-* 等旧类名确实继承 M3 配色并随明暗翻转。
     colors: {
-      ...colors,
+      ...palette,
 
       // —— M3 角色色 ——
       primary: c("--md-primary"),

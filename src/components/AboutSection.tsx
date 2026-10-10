@@ -11,7 +11,7 @@ import { Icon } from "./ui/icon";
 import { toast } from "./ui/toast";
 import { isTauri } from "../lib/invoke";
 
-const REPO = "ycsy520/Smart-Collector";
+const REPO = "ycsy520/SmartCollector";
 const REPO_URL = `https://github.com/${REPO}`;
 const RELEASE_API = `https://api.github.com/repos/${REPO}/releases/latest`;
 
@@ -206,7 +206,7 @@ export function AboutSection() {
             kind: "unreachable",
             reason:
               res.status === 404
-                ? "仓库尚未公开，或还没有发布版本"
+                ? "该仓库还没有已发布的版本"
                 : `GitHub 返回 HTTP ${res.status}`,
           };
         } else {
@@ -327,16 +327,16 @@ export function AboutSection() {
         <Disclosure label="政策与版权" open={open === "policy"} onToggle={() => toggle("policy")}>
           <div className="space-y-2 text-xs leading-relaxed text-on-surface-variant">
             <p>
-              <span className="font-semibold text-on-surface">许可现状。</span>
-              本软件目前未采用任何公开开源许可证，源码仓库尚未公开；在作者明确授予许可之前，
-              请勿分发、反编译或用于再发布。
+              <span className="font-semibold text-on-surface">许可。</span>
+              本项目以 MIT 许可证开源，源码与许可声明见上方仓库地址的 LICENSE 文件；
+              你可以自由使用、修改与再分发，仅需保留原作者版权声明。
             </p>
             <p>
               <span className="font-semibold text-on-surface">责任范围。</span>
               收集到的内容完全由你本人决定与负责；模型输出由第三方服务商生成，可能存在错误，
               归档前请自行核对。删除后不可恢复。
             </p>
-            <p>© 2026 ycsy520 · 保留所有权利。</p>
+            <p>© 2026 ycsy520 · 本项目依 MIT 许可证发布。</p>
           </div>
         </Disclosure>
 
